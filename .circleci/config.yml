@@ -44,7 +44,7 @@ jobs:
     steps:
       - run:
           name: "echo an env var that is part of our project"
-          commane: |
+          command: |
             echo $MY_NAME
 
 # Invoke jobs via workflows
