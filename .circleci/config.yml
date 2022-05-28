@@ -24,7 +24,7 @@ jobs:
           command: "echo Hello, World!"
   print-hello:
     docker:
-      - image: circleci/node:13.8.0
+      - image: cimg/base:2020.01
     steps:
       - checkout
       - run:
@@ -32,7 +32,7 @@ jobs:
           command: "echo hello"
   print-world:
     docker:
-      - image: circleci/node:13.8.0
+      - image: cimg/base:2020.01
     steps:
       - checkout
       - run:
@@ -40,7 +40,7 @@ jobs:
           command: "echo world"
   print-my-name:
     docker:
-      - image: circleci/node:13.8.0
+      - image: cimg/base:2020.01
     steps:
       - run:
           name: "echo an env var that is part of our project"
