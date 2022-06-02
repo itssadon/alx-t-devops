@@ -9,7 +9,7 @@
   apt:
     upgrade: yes
 
-- name: "remove dependencies that are no longer required"
+- name: remove dependencies that are no longer required
   become: yes
   apt:
     autoremove: yes
@@ -29,16 +29,16 @@
     production: yes
     state: present
 
-- name: "create directory"
+- name: Creates directory
   file:
     path: ~/web
     state: directory
 
-- name: "copy index test page"
+- name: Copy index test page
   template:
     src: "files/index.js"
     dest: "~/web/index.js"
 
-- name: "executing node"
+- name: Executing node
   shell: |
     pm2 start ~/web/index.js -f
