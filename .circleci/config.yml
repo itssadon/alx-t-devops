@@ -29,7 +29,38 @@ commands:
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
-  
+  # Exercise: Creating a Simple Workflow
+  # Exercise: Environment Variables
+  # Exercise: Reusable Job Code 
+  print_greetings:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - print_pipeline_id:
+          id: << pipeline.id >>
+      - run: echo HELLO
+      - run: echo WORLD
+      - run: echo $_env_name
+
+  # Exercise: Sharing Files (Job names may have changed)
+  upload_file:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - run: echo "THIS IS A SAMPLE TEXT" > ~/output.txt  
+      - persist_to_workspace:
+          root: ~/
+          paths: 
+            - output.txt  
+
+  download_file:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run: cat ~/output.txt
+
   # Exercise: Infrastructure Creation
   # Exercise - Rollback
   create_infrastructure:
@@ -181,19 +212,36 @@ jobs:
 workflows:
   my-workflow:
     jobs:
-      # - create_infrastructure
+      - print_greetings
+      # - upload_file
+      # - download_file:
+      #     requires:
+      #       - upload_file
+      # - create_infrastructure:
+      #     filters:
+      #       branches:
+      #         only:
+      #           - main
       # - configure_infrastructure:
       #     requires:
       #       - create_infrastructure
       # - smoke_test:
       #     requires:
       #       - create_infrastructure
-      - create_and_deploy_front_end
-      - promote_to_production:
-          requires: 
-            - create_and_deploy_front_end
-      - get_last_deployment_id
-      - clean_up_old_front_end:
-          requires:
-            - get_last_deployment_id
-            - promote_to_production
+      # - create_and_deploy_front_end:
+      #     filters:
+      #       branches:
+      #         only:
+      #           - main
+      # - promote_to_production:
+      #     requires: 
+      #       - create_and_deploy_front_end
+      # - get_last_deployment_id:
+      #     filters:
+      #       branches:
+      #         only:
+      #           - main
+      # - clean_up_old_front_end:
+      #     requires:
+      #       - get_last_deployment_id
+      #       - promote_to_production
