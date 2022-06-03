@@ -213,35 +213,35 @@ workflows:
   my-workflow:
     jobs:
       - print_greetings
-      - upload_file
-      - download_file:
-          requires:
-            - upload_file
-      - create_infrastructure:
-          filters:
-            branches:
-              only:
-                - main
-      - configure_infrastructure:
-          requires:
-            - create_infrastructure
-      - smoke_test:
-          requires:
-            - create_infrastructure
-      - create_and_deploy_front_end:
-          filters:
-            branches:
-              only:
-                - main
-      - promote_to_production:
-          requires: 
-            - create_and_deploy_front_end
-      - get_last_deployment_id:
-          filters:
-            branches:
-              only:
-                - main
-      - clean_up_old_front_end:
-          requires:
-            - get_last_deployment_id
-            - promote_to_production
+      # - upload_file
+      # - download_file:
+      #     requires:
+      #       - upload_file
+      # - create_infrastructure:
+      #     filters:
+      #       branches:
+      #         only:
+      #           - main
+      # - configure_infrastructure:
+      #     requires:
+      #       - create_infrastructure
+      # - smoke_test:
+      #     requires:
+      #       - create_infrastructure
+      # - create_and_deploy_front_end:
+      #     filters:
+      #       branches:
+      #         only:
+      #           - main
+      # - promote_to_production:
+      #     requires: 
+      #       - create_and_deploy_front_end
+      # - get_last_deployment_id:
+      #     filters:
+      #       branches:
+      #         only:
+      #           - main
+      # - clean_up_old_front_end:
+      #     requires:
+      #       - get_last_deployment_id
+      #       - promote_to_production
