@@ -217,11 +217,11 @@ workflows:
       # - download_file:
       #     requires:
       #       - upload_file
-      # - create_infrastructure:
-      #     filters:
-      #       branches:
-      #         only:
-      #           - main
+      - create_infrastructure:
+          filters:
+            branches:
+              only:
+                - main
       # - configure_infrastructure:
       #     requires:
       #       - create_infrastructure
