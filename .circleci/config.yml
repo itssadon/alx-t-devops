@@ -13,8 +13,11 @@ orbs:
 commands:
   # Exercise: Reusable Job Code
   print_pipeline_id:
+    parameters:
+      id:
+        type: string
     steps:
-      - run: echo ${CIRCLE_WORKFLOW_ID}
+      - run: echo << parameters.id >>
   # Exercise - Rollback
   destroy_environment:
     steps:
@@ -31,7 +34,7 @@ commands:
 jobs:
   # Exercise: Creating a Simple Workflow
   # Exercise: Environment Variables
-  # Exercise: Reusable Job Code 
+  # Exercise: Reusable Job Code
   print_greetings:
     docker:
       - image: circleci/node:13.8.0
@@ -47,11 +50,11 @@ jobs:
     docker:
       - image: circleci/node:13.8.0
     steps:
-      - run: echo "THIS IS A SAMPLE TEXT" > ~/output.txt  
+      - run: echo "THIS IS A SAMPLE TEXT" > ~/output.txt
       - persist_to_workspace:
           root: ~/
-          paths: 
-            - output.txt  
+          paths:
+            - output.txt
 
   download_file:
     docker:
@@ -79,7 +82,7 @@ jobs:
       # Uncomment the line below if you want to fail the current step
       # - run: return 1
       - destroy_environment
-  
+
   # Exercise: Config and Deployment
   configure_infrastructure:
     docker:
@@ -99,7 +102,7 @@ jobs:
           command: |
             # Your command
             ansible-playbook -i inventory.txt main.yml
-  
+
   # Exercise: Smoke Testing
   smoke_test:
     docker:
@@ -118,7 +121,7 @@ jobs:
               return 1
             fi
       - destroy_environment
-  
+
   # Exercise: Promote to Production - Job 1
   # Prerequisite:
   # 1. An S3 bucket (say `mybucket644752792305`) with a sample index.html created manually in your AWS console.
@@ -150,7 +153,7 @@ jobs:
             --parameter-overrides MyBucketName="mybucket-${CIRCLE_WORKFLOW_ID:0:7}"
       # Uncomment the step below if yoou wish to upload all contents of the current directory to the S3 bucket
       - run: aws s3 sync . s3://mybucket-${CIRCLE_WORKFLOW_ID:0:7} --delete
-  
+
   # Exercise: Promote to Production - Job 2
   # Fetch and save the pipeline ID (bucket ID) responsible for the last release.
   get_last_deployment_id:
@@ -169,9 +172,9 @@ jobs:
           root: ~/
           paths:
             - textfile.txt
-  
+
   # Exercise: Promote to Production - Job 3
-  # Executes the cloudfront.yml template that will modify the existing CloudFront Distribution, change its target from the old bucket to the new bucket - `mybucket-${CIRCLE_WORKFLOW_ID:0:7}`. 
+  # Executes the cloudfront.yml template that will modify the existing CloudFront Distribution, change its target from the old bucket to the new bucket - `mybucket-${CIRCLE_WORKFLOW_ID:0:7}`.
   # Notice here we use the stack name `production-distro` which is the same name we used while deploying to the S3 bucket manually.
   promote_to_production:
     docker:
@@ -185,7 +188,7 @@ jobs:
             --template-file cloudfront.yml \
             --stack-name production-distro \
             --parameter-overrides PipelineID="mybucket-${CIRCLE_WORKFLOW_ID:0:7}"
-  
+
   # Exercise: Promote to Production - Job 4
   # Destroy the previous production version's S3 bucket and CloudFormation stack.
   clean_up_old_front_end:
@@ -234,7 +237,7 @@ workflows:
       #         only:
       #           - main
       # - promote_to_production:
-      #     requires: 
+      #     requires:
       #       - create_and_deploy_front_end
       # - get_last_deployment_id:
       #     filters:
