@@ -215,16 +215,12 @@ jobs:
 workflows:
   my-workflow:
     jobs:
-      - print_greetings
+      # - print_greetings
       # - upload_file
       # - download_file:
       #     requires:
       #       - upload_file
-      - create_infrastructure:
-          filters:
-            branches:
-              only:
-                - main
+      - create_infrastructure
       # - configure_infrastructure:
       #     requires:
       #       - create_infrastructure
