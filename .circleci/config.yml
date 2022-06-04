@@ -76,9 +76,9 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install tar utility
+          name: Install tar utility and aws-cli
           command: |
-            yum install -y tar gzip
+            apk add --update tar gzip aws-cli
       - attach_workspace:
           at: .
       - add_ssh_keys:
