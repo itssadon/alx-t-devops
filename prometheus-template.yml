@@ -1,0 +1,96 @@
+# Exercise - Rollback
+AWSTemplateFormatVersion: 2010-09-09
+Description: Prometheus Monitoring Setup
+Resources:
+  EC2Instance:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      SecurityGroups:
+        - !Ref InstanceSecurityGroup
+      # Change this, as applicable to you
+      KeyName: udacity
+      # Change this, as applicable to you
+      # You may need to find out what instance types are available in your region - use https://cloud-images.ubuntu.com/locator/ec2/
+      ImageId: "ami-01f18be4e32df20e2"
+      InstanceType: t2.micro
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          # Create a different user for running prometheus
+          sudo useradd --no-create-home prometheus
+          sudo mkdir /etc/prometheus
+          sudo mkdir /var/lib/prometheus
+          
+          # Install prometheus
+          wget https://github.com/prometheus/prometheus/releases/download/v2.19.0/prometheus-2.19.0.linux-amd64.tar.gz
+          tar xvfz prometheus-2.19.0.linux-amd64.tar.gz
+          sudo cp prometheus-2.19.0.linux-amd64/prometheus /usr/local/bin
+          sudo cp prometheus-2.19.0.linux-amd64/promtool /usr/local/bin/
+          sudo cp -r prometheus-2.19.0.linux-amd64/consoles /etc/prometheus
+          sudo cp -r prometheus-2.19.0.linux-amd64/console_libraries /etc/prometheus
+          sudo cp prometheus-2.19.0.linux-amd64/promtool /usr/local/bin/
+          rm -rf prometheus-2.19.0.linux-amd64.tar.gz prometheus-2.19.0.linux-amd64
+          sudo echo \
+            "global:
+              scrape_interval: 15s
+              external_labels:
+                monitor: 'prometheus'
+
+            scrape_configs:
+              - job_name: 'prometheus'
+                static_configs:
+                  - targets: ['localhost:9090']" > /etc/prometheus/prometheus.yml
+          sudo echo \
+            "[Unit]
+            Description=Prometheus
+            Wants=network-online.target
+            After=network-online.target
+
+            [Service]
+            User=prometheus
+            Group=prometheus
+            Type=simple
+            ExecStart=/usr/local/bin/prometheus \
+                --config.file /etc/prometheus/prometheus.yml \
+                --storage.tsdb.path /var/lib/prometheus/ \
+                --web.console.templates=/etc/prometheus/consoles \
+                --web.console.libraries=/etc/prometheus/console_libraries
+
+            [Install]
+            WantedBy=multi-user.target" > /etc/systemd/system/prometheus.service
+          
+          # Change permissions of the directories, files and binaries
+          sudo chown prometheus:prometheus /etc/prometheus
+          sudo chown prometheus:prometheus /usr/local/bin/prometheus
+          sudo chown prometheus:prometheus /usr/local/bin/promtool
+          sudo chown -R prometheus:prometheus /etc/prometheus/consoles
+          sudo chown -R prometheus:prometheus /etc/prometheus/console_libraries
+          sudo chown -R prometheus:prometheus /var/lib/prometheus
+          
+          # Configure systemd
+          sudo systemctl daemon-reload
+          sudo systemctl enable prometheus
+      Tags:
+        - Key: Name
+          Value: Prometheus Server
+        - Key: Purpose
+          Value: prometheus
+        - Key: Project
+          Value: udacity
+  InstanceSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: Enable SSH access via port 22
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 9090
+          ToPort: 9090
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 9093
+          ToPort: 9093
+          CidrIp: 0.0.0.0/0

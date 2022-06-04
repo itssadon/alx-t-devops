@@ -14,6 +14,10 @@ Resources:
       ImageId: "ami-01f18be4e32df20e2"
       InstanceType: t2.micro
       Tags:
+        - Key: Name
+          Value: Prometheus Node Exporter
+        - Key: Purpose
+          Value: node-exporter
         - Key: Project
           Value: udacity
   InstanceSecurityGroup:
@@ -26,6 +30,6 @@ Resources:
           ToPort: 22
           CidrIp: 0.0.0.0/0
         - IpProtocol: tcp
-          FromPort: 9090
-          ToPort: 9090
+          FromPort: 9100
+          ToPort: 9100
           CidrIp: 0.0.0.0/0
