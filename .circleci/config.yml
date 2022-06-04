@@ -177,10 +177,12 @@ workflows:
       - configure_prometheus_infrastructure:
           requires:
             - get_prometheus_infrastructure_ip
-      # - create_node_exporter_infrastructure
-      # - get_node_exporter_infrastructure_ip:
-      #     requires:
-      #       - create_node_exporter_infrastructure
+      - create_node_exporter_infrastructure:
+          requires:
+            - create_prometheus_infrastructure
+      - get_node_exporter_infrastructure_ip:
+          requires:
+            - create_node_exporter_infrastructure
       # - configure_node_exporter_infrastructure:
       #     requires:
       #       - get_node_exporter_infrastructure_ip
