@@ -1,6 +1,6 @@
 # Exercise - Rollback
 AWSTemplateFormatVersion: 2010-09-09
-Description: Node Exporter for gathering metrics
+Description: Node Exporter for exporting metrics to Prometheus - Abubakar
 Resources:
   EC2Instance:
     Type: "AWS::EC2::Instance"

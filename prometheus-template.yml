@@ -1,6 +1,6 @@
 # Exercise - Rollback
 AWSTemplateFormatVersion: 2010-09-09
-Description: Prometheus Monitoring Setup
+Description: Prometheus Monitoring - Abubakar
 Resources:
   EC2Instance:
     Type: "AWS::EC2::Instance"
