@@ -59,6 +59,7 @@ jobs:
       - run:
           name: Get instance IP
           command: |
+            echo "[all]" > prometheus-inventory.txt
             aws ec2 describe-instances \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --filters "Name=tag:Purpose,Values=prometheus" \
@@ -98,7 +99,7 @@ jobs:
       - run:
           name: Run Playbook and Configure server
           command: |
-            ansible-playbook -i ~/prometheus-inventory.txt main.yml
+            ansible-playbook -i ./prometheus-inventory.txt main.yml
       - destroy_environment
   
   # Create node_exporter instance
