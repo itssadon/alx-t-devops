@@ -53,6 +53,10 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - run:
+          name: Install tar utility
+          command: |
+            yum install -y tar gzip
+      - run:
           name: Get instance IP
           command: |
             aws ec2 describe-instances \
@@ -63,6 +67,7 @@ jobs:
           root: ~/
           paths:
             - prometheus-inventory.txt
+      - destroy_environment
 
   # Configure Prometheus
   configure_prometheus_infrastructure:
@@ -70,6 +75,10 @@ jobs:
       - image: python:3.7-alpine3.11
     steps:
       - checkout
+      - run:
+          name: Install tar utility
+          command: |
+            yum install -y tar gzip
       - attach_workspace:
           at: ~/
       - add_ssh_keys:
@@ -82,6 +91,7 @@ jobs:
           name: Run Playbook and Configure server
           command: |
             ansible-playbook -i ~/prometheus-inventory.txt main.yml
+      - destroy_environment
   
   # Create node_exporter instance
   create_node_exporter_infrastructure:

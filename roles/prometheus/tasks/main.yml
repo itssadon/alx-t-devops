@@ -14,6 +14,10 @@
   shell: |
     mkdir /var/lib/prometheus
 
+- name: Install tar utility
+  command: |
+            yum install -y tar gzip
+
 - name: download and extract prometheus files
   shell: |
     wget https://github.com/prometheus/prometheus/releases/download/v2.19.0/prometheus-2.19.0.linux-amd64.tar.gz
