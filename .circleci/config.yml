@@ -19,7 +19,7 @@ commands:
     steps:
       - run: echo << parameters.id >>
   # Exercise - Rollback
-  destroy_environment:
+  destroy_prometheus_environment:
     steps:
       - run:
           name: Destroy environment
@@ -28,6 +28,15 @@ commands:
           when: on_fail
           command: |
             aws cloudformation delete-stack --stack-name prometheus-${CIRCLE_WORKFLOW_ID:0:5}
+  destroy_node_exporter_environment:
+    steps:
+      - run:
+          name: Destroy environment
+          # ${CIRCLE_WORKFLOW_ID} is a Built-in environment variable
+          # ${CIRCLE_WORKFLOW_ID:0:5} takes the first 5 chars of the variable CIRCLE_CI_WORKFLOW_ID
+          when: on_fail
+          command: |
+            aws cloudformation delete-stack --stack-name prometheus-node-exporter-${CIRCLE_WORKFLOW_ID:0:5}
 
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
@@ -45,7 +54,7 @@ jobs:
               --template-file prometheus-template.yml \
               --stack-name prometheus-${CIRCLE_WORKFLOW_ID:0:5} \
               --region us-east-1
-      - destroy_environment
+      - destroy_prometheus_environment
 
   # Get prometheus instance IP
   get_prometheus_infrastructure_ip:
@@ -72,7 +81,6 @@ jobs:
           root: .
           paths:
             - .
-      - destroy_environment
 
   # Configure Prometheus
   configure_prometheus_infrastructure:
@@ -100,7 +108,6 @@ jobs:
           name: Run Playbook and Configure server
           command: |
             ansible-playbook -i ./prometheus-inventory.txt main.yml
-      - destroy_environment
 
   # Create node_exporter instance
   create_node_exporter_infrastructure:
@@ -115,7 +122,7 @@ jobs:
               --template-file prometheus-node-exporter-template.yml \
               --stack-name prometheus-node-exporter-${CIRCLE_WORKFLOW_ID:0:5} \
               --region us-east-1
-      - destroy_environment
+      - destroy_node_exporter_environment
 
   # Get node exporter instance IP
   get_node_exporter_infrastructure_ip:
@@ -142,7 +149,6 @@ jobs:
           root: .
           paths:
             - .
-      - destroy_environment
 
   # Configure node exporter
   configure_node_exporter_infrastructure:
@@ -170,7 +176,6 @@ jobs:
           name: Run Playbook and Configure server
           command: |
             ansible-playbook -i ./prometheus-node-exporter-inventory.txt node-exporter.main.yml
-      - destroy_environment
 
   # prepare new promitheus configuration file
   prepare_prometheus_config:
@@ -209,12 +214,11 @@ jobs:
       - run:
           name: Show new prometheus configuration
           command: |
-            cat roles/prometheus-node-exporter/files/prometheus.yml
+            cat new_prometheus.yml
       - persist_to_workspace:
           root: .
           paths:
             - .
-      - destroy_environment
 
   # configure prometheus to start receiving metrics from the Node Exporter
   configure_prometheus_to_receive_metrics:
@@ -242,7 +246,6 @@ jobs:
           name: Run Playbook and Configure server
           command: |
             ansible-playbook -i ./prometheus-inventory.txt main.yml
-      - destroy_environment
 
   # Smoke Testing
   smoke_test:
