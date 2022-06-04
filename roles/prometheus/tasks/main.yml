@@ -65,10 +65,10 @@
     src: "files/prometheus-self-monitor.yml"
     dest: "/etc/systemd/system/prometheus.service"
 
-- name: change the permissions of /etc/promethes
+- name: change the permissions of /etc/prometheus
   become: yes
   file:
-    path: /etc/promethes
+    path: /etc/prometheus
     owner: prometheus
     group: prometheus
 
