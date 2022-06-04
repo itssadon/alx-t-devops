@@ -82,7 +82,11 @@ jobs:
       - run:
           name: Install tar utility
           command: |
-            apk add --no-cache tar gzip aws-cli
+            apk add --no-cache tar gzip
+      - run:
+          name: Install AWS CLI
+          command: |
+            pip3 install --upgrade pip && pip3 install --no-cache-dir awscli 
       - attach_workspace:
           at: .
       - add_ssh_keys:
