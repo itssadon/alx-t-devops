@@ -30,8 +30,6 @@
 
 - name: create directory to host prometheus data
   become: yes
-  shell: |
-    mkdir /var/lib/prometheus
   file:
     path: /var/lib/prometheus
     state: directory
