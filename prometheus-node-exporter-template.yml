@@ -1,6 +1,6 @@
 # Exercise - Rollback
 AWSTemplateFormatVersion: 2010-09-09
-Description: ND9991 C3 L4
+Description: Node Exporter for gathering metrics
 Resources:
   EC2Instance:
     Type: "AWS::EC2::Instance"
@@ -17,7 +17,7 @@ Resources:
         - Key: Name
           Value: Prometheus Node Exporter
         - Key: Purpose
-          Value: node-exporter
+          Value: prometheus-node-exporter
         - Key: Project
           Value: udacity
   InstanceSecurityGroup:
