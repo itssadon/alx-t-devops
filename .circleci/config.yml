@@ -87,7 +87,7 @@ jobs:
       - run:
           name: Install AWS CLI
           command: |
-            pip3 install --upgrade pip && pip3 install --no-cache-dir awscli 
+            pip3 install --upgrade pip && pip3 install --no-cache-dir awscli
       - attach_workspace:
           at: .
       - add_ssh_keys:
@@ -101,7 +101,7 @@ jobs:
           command: |
             ansible-playbook -i ./prometheus-inventory.txt main.yml
       - destroy_environment
-  
+
   # Create node_exporter instance
   create_node_exporter_infrastructure:
     docker:
@@ -157,7 +157,7 @@ jobs:
       - run:
           name: Install AWS CLI
           command: |
-            pip3 install --upgrade pip && pip3 install --no-cache-dir awscli 
+            pip3 install --upgrade pip && pip3 install --no-cache-dir awscli
       - attach_workspace:
           at: .
       - add_ssh_keys:
@@ -171,7 +171,51 @@ jobs:
           command: |
             ansible-playbook -i ./prometheus-node-exporter-inventory.txt node-exporter.main.yml
       - destroy_environment
-  
+
+  # prepare new promitheus configuration file
+  prepare_prometheus_config:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      # - run:
+      #     name: Install tar utility
+      #     command: |
+      #       yum install -y tar gzip
+      - run:
+          name: Get node_exporter instance DNS Name
+          command: |
+            aws ec2 describe-instances \
+              --query 'Reservations[*].Instances[*].PublicDnsName' \
+              --filters "Name=tag:Purpose,Values=prometheus-node-exporter" \
+              --output text >> prometheus-node-exporter-dns.txt
+      - run:
+          name: Show DNS
+          command: |
+            cat prometheus-node-exporter-dns.txt
+            PUBLIC_DNS_NAME=$( cat prometheus-node-exporter-dns.txt)
+      - run:
+          name: prepare new prometheus configuration
+          command: |
+            echo \
+            "global:
+              scrape_interval: 15s
+              external_labels:
+                monitor: "prometheus"
+
+            scrape_configs:
+              - job_name: "node_exporter"
+                static_configs:
+                  - targets: ["${PUBLIC_DNS_NAME}:9100"]" > roles/prometheus-node-exporter/files/prometheus.yml
+      - run:
+          name: Show new prometheus configuration
+          command: |
+            cat roles/prometheus-node-exporter/files/prometheus.yml
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+      - destroy_environment
+
   # configure prometheus to start receiving metrics from the Node Exporter
   configure_prometheus_to_receive_metrics:
     docker:
@@ -185,7 +229,7 @@ jobs:
       - run:
           name: Install AWS CLI
           command: |
-            pip3 install --upgrade pip && pip3 install --no-cache-dir awscli 
+            pip3 install --upgrade pip && pip3 install --no-cache-dir awscli
       - attach_workspace:
           at: .
       - add_ssh_keys:
@@ -199,7 +243,7 @@ jobs:
           command: |
             ansible-playbook -i ./prometheus-inventory.txt main.yml
       - destroy_environment
-  
+
   # Smoke Testing
   smoke_test:
     docker:
@@ -240,6 +284,13 @@ workflows:
       - configure_node_exporter_infrastructure:
           requires:
             - get_node_exporter_infrastructure_ip
+      - prepare_prometheus_config:
+          requires:
+            - configure_node_exporter_infrastructure
+      # - configure_prometheus_to_receive_metrics:
+      #     requires:
+      #       - create_prometheus_infrastructure
+      #       - prepare_prometheus_config
       # - smoke_test:
       #     requires:
       #       - create_infrastructure
