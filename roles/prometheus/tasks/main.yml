@@ -1,4 +1,19 @@
 ---
+- name: update apt packages
+  become: yes
+  apt:
+    update_cache: yes
+
+- name: upgrade packages
+  become: yes
+  apt:
+    upgrade: yes
+
+- name: remove dependencies that are no longer required
+  become: yes
+  apt:
+    autoremove: yes
+
 - name: add user to run prometheus service
   become: yes
   shell: |
@@ -13,10 +28,6 @@
   become: yes
   shell: |
     mkdir /var/lib/prometheus
-
-- name: Install tar utility
-  command: |
-            yum install -y tar gzip
 
 - name: download and extract prometheus files
   shell: |
