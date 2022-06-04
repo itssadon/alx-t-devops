@@ -63,6 +63,10 @@ jobs:
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --filters "Name=tag:Purpose,Values=prometheus" \
               --output text >> prometheus-inventory.txt
+      - run:
+          name: Show IP
+          command: |
+            cat prometheus-inventory.txt
       - persist_to_workspace:
           root: .
           paths:
@@ -76,9 +80,9 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install tar utility and aws-cli
+          name: Install tar utility
           command: |
-            apk add --update tar gzip awscli
+            apk add --no-cache tar gzip aws-cli
       - attach_workspace:
           at: .
       - add_ssh_keys:
