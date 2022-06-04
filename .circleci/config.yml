@@ -66,6 +66,23 @@ jobs:
               --region us-east-1
       - destroy_environment
 
+  # Get prometheus instance IP
+  get_prometheus_infrastructure_ip:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - run:
+          name: Get instance IP
+          command: |
+            aws ec2 describe-instances \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=tag:Purpose,Values=prometheus" \
+              --output text >> prometheus-inventory.txt
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - prometheus-inventory.txt
+
   # Configure Prometheus
   configure_prometheus_infrastructure:
     docker:
@@ -131,9 +148,12 @@ workflows:
       #     requires:
       #       - upload_file
       - create_prometheus_infrastructure
-      # - configure_prometheus_infrastructure:
-      #     requires:
-      #       - create_prometheus_infrastructure
+      - get_prometheus_infrastructure_ip:
+          requires:
+            - create_prometheus_infrastructure
+      - configure_prometheus_infrastructure:
+          requires:
+            - get_prometheus_infrastructure_ip
       # - create_node_exporter_infrastructure
       #     requires:
       #       - configure_prometheus_infrastructure
