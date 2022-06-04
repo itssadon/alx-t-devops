@@ -24,10 +24,10 @@ commands:
       - run:
           name: Destroy environment
           # ${CIRCLE_WORKFLOW_ID} is a Built-in environment variable
-          # ${CIRCLE_WORKFLOW_ID:0:7} takes the first 7 chars of the variable CIRCLE_CI_WORKFLOW_ID
+          # ${CIRCLE_WORKFLOW_ID:0:5} takes the first 5 chars of the variable CIRCLE_CI_WORKFLOW_ID
           when: on_fail
           command: |
-            aws cloudformation delete-stack --stack-name prometheus-${CIRCLE_WORKFLOW_ID:0:7}
+            aws cloudformation delete-stack --stack-name prometheus-${CIRCLE_WORKFLOW_ID:0:5}
 
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
@@ -39,11 +39,11 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Create Cloudformation Stack
+          name: Create infrastructure
           command: |
             aws cloudformation deploy \
               --template-file prometheus-template.yml \
-              --stack-name prometheus-${CIRCLE_WORKFLOW_ID:0:7} \
+              --stack-name prometheus-${CIRCLE_WORKFLOW_ID:0:5} \
               --region us-east-1
       - destroy_environment
 
@@ -91,7 +91,7 @@ jobs:
       - attach_workspace:
           at: .
       - add_ssh_keys:
-          fingerprints: ["5c:b0:d2:b6:07:d4:0a:9a:d0:d9:4e:9d:e0:7b:3f:82"]
+          fingerprints: ["5c:b0:d2:b6:07:d4:0a:9a:d0:d9:4e:9d:e0:5b:3f:82"]
       - run:
           name: Install Ansible
           command: |
@@ -109,11 +109,11 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Create Cloudformation Stack
+          name: Create infrastructure
           command: |
             aws cloudformation deploy \
               --template-file prometheus-node-exporter-template.yml \
-              --stack-name prometheus-${CIRCLE_WORKFLOW_ID:0:7} \
+              --stack-name prometheus-${CIRCLE_WORKFLOW_ID:0:5} \
               --region us-east-1
       - destroy_environment
 
