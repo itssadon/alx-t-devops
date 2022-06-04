@@ -32,25 +32,6 @@ commands:
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
-  # Exercise: Sharing Files (Job names may have changed)
-  upload_file:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - run: echo "THIS IS A SAMPLE TEXT" > ~/output.txt
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - output.txt
-
-  download_file:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - attach_workspace:
-          at: ~/
-      - run: cat ~/output.txt
-
   # Create prometheus instance
   create_prometheus_infrastructure:
     docker:
@@ -89,19 +70,18 @@ jobs:
       - image: python:3.7-alpine3.11
     steps:
       - checkout
+      - attach_workspace:
+          at: ~/
       - add_ssh_keys:
-          # You can get this ID in the section where you registered the SSH Key
           fingerprints: ["5c:b0:d2:b6:07:d4:0a:9a:d0:d9:4e:9d:e0:7b:3f:82"]
       - run:
           name: Install Ansible
           command: |
-            # Install Ansible
             apk add --update ansible
       - run:
           name: Run Playbook and Configure server
           command: |
-            # Your command
-            ansible-playbook -i inventory.txt main.yml
+            ansible-playbook -i ~/prometheus-inventory.txt main.yml
   
   # Create node_exporter instance
   create_node_exporter_infrastructure:
@@ -142,11 +122,6 @@ jobs:
 workflows:
   prometheus-setup:
     jobs:
-      # - print_greetings
-      # - upload_file
-      # - download_file:
-      #     requires:
-      #       - upload_file
       - create_prometheus_infrastructure
       - get_prometheus_infrastructure_ip:
           requires:
