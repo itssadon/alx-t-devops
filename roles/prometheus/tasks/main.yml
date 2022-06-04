@@ -62,7 +62,7 @@
 - name: configure Prometheus to be available as a service
   become: yes
   template:
-    src: "files/prometheus-self-monitor.yml"
+    src: "files/prometheus.service"
     dest: "/etc/systemd/system/prometheus.service"
 
 - name: change the permissions of /etc/prometheus
@@ -115,3 +115,5 @@
   shell: |
     systemctl daemon-reload
     systemctl enable prometheus
+    systemctl start prometheus
+    systemctl status prometheus
