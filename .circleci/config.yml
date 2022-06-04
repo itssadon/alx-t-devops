@@ -116,6 +116,33 @@ jobs:
               --stack-name prometheus-${CIRCLE_WORKFLOW_ID:0:7} \
               --region us-east-1
       - destroy_environment
+
+  # Get prometheus instance IP
+  get_node_exporter_infrastructure_ip:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - run:
+          name: Install tar utility
+          command: |
+            yum install -y tar gzip
+      - run:
+          name: Get instance IP
+          command: |
+            echo "[all]" > prometheus-node-exporter-inventory.txt
+            aws ec2 describe-instances \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=tag:Purpose,Values=prometheus-node-exporter" \
+              --output text >> prometheus-node-exporter-inventory.txt
+      - run:
+          name: Show IP
+          command: |
+            cat prometheus-node-exporter-inventory.txt
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+      - destroy_environment
   
   # Smoke Testing
   smoke_test:
@@ -148,12 +175,13 @@ workflows:
       - configure_prometheus_infrastructure:
           requires:
             - get_prometheus_infrastructure_ip
-      # - create_node_exporter_infrastructure
-      #     requires:
-      #       - configure_prometheus_infrastructure
+      - create_node_exporter_infrastructure
+      - get_node_exporter_infrastructure_ip:
+          requires:
+            - create_node_exporter_infrastructure
       # - configure_node_exporter_infrastructure:
       #     requires:
-      #       - create_node_exporter_infrastructure
+      #       - get_node_exporter_infrastructure_ip
       # - smoke_test:
       #     requires:
       #       - create_infrastructure
