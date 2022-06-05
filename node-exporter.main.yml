@@ -1,9 +1,9 @@
 ---
-- name: Setting up prometheus for monitoring
+- name: Setting up node exporter for exporting metrics to prometheus
   hosts: all
   user: ubuntu
   become: true
   become_method: sudo
   become_user: root
   roles:
-    - prometheus
+    - node-exporter

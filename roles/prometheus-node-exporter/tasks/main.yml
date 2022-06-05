@@ -1,0 +1,11 @@
+---
+- name: change prometheus configuration to start receiving metrics from the Node Exporter
+  become: yes
+  template:
+    src: "files/prometheus.yml"
+    dest: "/etc/prometheus/prometheus.yml"
+
+- name: restart prometheus service
+  become: yes
+  shell: |
+    systemctl restart prometheus

@@ -1,6 +1,6 @@
 # Exercise - Rollback
 AWSTemplateFormatVersion: 2010-09-09
-Description: ND9991 C3 L4
+Description: Prometheus Monitoring - Abubakar
 Resources:
   EC2Instance:
     Type: "AWS::EC2::Instance"
@@ -14,6 +14,10 @@ Resources:
       ImageId: "ami-01f18be4e32df20e2"
       InstanceType: t2.micro
       Tags:
+        - Key: Name
+          Value: Prometheus Server
+        - Key: Purpose
+          Value: prometheus
         - Key: Project
           Value: udacity
   InstanceSecurityGroup:
@@ -22,6 +26,14 @@ Resources:
       GroupDescription: Enable SSH access via port 22
       SecurityGroupIngress:
         - IpProtocol: tcp
-          FromPort: "22"
-          ToPort: "22"
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 9090
+          ToPort: 9090
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 9093
+          ToPort: 9093
           CidrIp: 0.0.0.0/0

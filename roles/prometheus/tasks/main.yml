@@ -1,0 +1,119 @@
+---
+- name: update apt packages
+  become: yes
+  apt:
+    update_cache: yes
+
+- name: upgrade packages
+  become: yes
+  apt:
+    upgrade: yes
+
+- name: remove dependencies that are no longer required
+  become: yes
+  apt:
+    autoremove: yes
+
+- name: add user to run prometheus service
+  become: yes
+  user:
+    create_home: no
+    name: prometheus
+    comment: Prometheus User
+
+- name: create a directory to host prometheus configuration
+  become: yes
+  file:
+    path: /etc/prometheus
+    state: directory
+    mode: "0755"
+
+- name: create directory to host prometheus data
+  become: yes
+  file:
+    path: /var/lib/prometheus
+    state: directory
+    mode: "0755"
+
+- name: download and extract prometheus files
+  shell: |
+    wget https://github.com/prometheus/prometheus/releases/download/v2.19.0/prometheus-2.19.0.linux-amd64.tar.gz
+    tar xvfz prometheus-2.19.0.linux-amd64.tar.gz
+
+- name: install prometheus
+  become: yes
+  shell: |
+    cp prometheus-2.19.0.linux-amd64/prometheus /usr/local/bin
+    cp prometheus-2.19.0.linux-amd64/promtool /usr/local/bin/
+    cp -r prometheus-2.19.0.linux-amd64/consoles /etc/prometheus
+    cp -r prometheus-2.19.0.linux-amd64/console_libraries /etc/prometheus
+    cp prometheus-2.19.0.linux-amd64/promtool /usr/local/bin/
+
+- name: cleanup
+  shell: |
+    rm -rf prometheus-2.19.0.linux-amd64.tar.gz prometheus-2.19.0.linux-amd64
+
+- name: configure Prometheus to monitor itself
+  become: yes
+  template:
+    src: "files/prometheus-self-monitor.yml"
+    dest: "/etc/prometheus/prometheus.yml"
+
+- name: configure Prometheus to be available as a service
+  become: yes
+  template:
+    src: "files/prometheus.service"
+    dest: "/etc/systemd/system/prometheus.service"
+
+- name: change the permissions of /etc/prometheus
+  become: yes
+  file:
+    path: /etc/prometheus
+    owner: prometheus
+    group: prometheus
+
+- name: change the permissions of /usr/local/bin/prometheus
+  become: yes
+  file:
+    path: /usr/local/bin/prometheus
+    owner: prometheus
+    group: prometheus
+
+- name: change the permissions of /usr/local/bin/promtool
+  become: yes
+  file:
+    path: /usr/local/bin/promtool
+    owner: prometheus
+    group: prometheus
+
+- name: Recursively change ownership of /etc/prometheus/consoles
+  file:
+    path: /etc/prometheus/consoles
+    state: directory
+    recurse: yes
+    owner: prometheus
+    group: prometheus
+
+- name: Recursively change ownership of /etc/prometheus/console_libraries
+  file:
+    path: /etc/prometheus/console_libraries
+    state: directory
+    recurse: yes
+    owner: prometheus
+    group: prometheus
+
+- name: Recursively change ownership of /var/lib/prometheus
+  file:
+    path: /var/lib/prometheus
+    state: directory
+    recurse: yes
+    owner: prometheus
+    group: prometheus
+
+- name: configure systemd
+  become: yes
+  shell: |
+    systemctl daemon-reload
+    systemctl enable prometheus
+    systemctl start prometheus
+    systemctl status prometheus
